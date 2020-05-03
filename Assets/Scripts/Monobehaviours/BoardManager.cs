@@ -36,13 +36,10 @@ public class BoardManager : MonoBehaviour
     private int level = 4;
     private int linesToLevel;
 
-    [SerializeField] private bool normaleMode = false;
-
-
     [SerializeField] private Brick currentBrick = default;
     [SerializeField] private Brick dropBrick = default;
     [SerializeField] private Brick[] nextBricks = default;
-    [SerializeField] private Brick sideBrick = default;
+    [SerializeField] private SideBrick sideBrick = default;
     [SerializeField] private GameObject cubePrefab = default;
 
     private Cube[] board;
@@ -156,7 +153,7 @@ public class BoardManager : MonoBehaviour
     {
         dropBrick.transform.position = currentBrick.transform.position;
         dropBrick.transform.rotation = currentBrick.transform.rotation;
-        sideBrick.transform.rotation = currentBrick.transform.rotation;
+        //sideBrick.transform.rotation = currentBrick.transform.rotation;
         dropBrick.DropDown(BOARD_WIDTH, ShapeAt);
     }
     public bool ShapeAt(int x, int y) => board[y * BOARD_WIDTH + x].IsActiveInBoard;
@@ -194,7 +191,7 @@ public class BoardManager : MonoBehaviour
                     lineIsFull = false;
                     break;
                 }
-                if (!normaleMode)
+                if (GameManager.Instance.GameMode != Enums.GameMode.NORMAL)
                 {
                     if (firstCubeLineDirection != board[i * BOARD_WIDTH + j].FrontCurrentFace())
                     {
@@ -266,42 +263,53 @@ public class BoardManager : MonoBehaviour
     #endregion
 
     #region InputHandling
-    //private void Update()
-    //{
-    //    if (boardState == Enums.BoardStats.FALLING)
-    //    {
-    //        if (Input.GetKeyDown(KeyCode.LeftArrow))
-    //            MoveBrick(Enums.Directions.LEFT);
+    private void Update()
+    {
+        var swipInfo = sideBrick.Swipe();
+        if(swipInfo != null)
+        {
+            for (int i = 0; i < currentBrick.brickShape.Length; i++)
+            {
+                if(currentBrick.brickShape[i].Id == swipInfo.Item2)
+                {
+                    currentBrick.brickShape[i].FlipCube(swipInfo.Item1);
+                }
+            }
+        }
+        //    if (boardState == Enums.BoardStats.FALLING)
+        //    {
+        //        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        //            MoveBrick(Enums.Directions.LEFT);
 
-    //        else if (Input.GetKeyDown(KeyCode.RightArrow))
-    //            MoveBrick(Enums.Directions.RIGHT);
+        //        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        //            MoveBrick(Enums.Directions.RIGHT);
 
-    //        else if (Input.GetKeyDown(KeyCode.DownArrow))
-    //            RotateBrick(Enums.Directions.RIGHT);
+        //        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        //            RotateBrick(Enums.Directions.RIGHT);
 
-    //        else if (Input.GetKeyDown(KeyCode.UpArrow))
-    //            RotateBrick(Enums.Directions.LEFT);
+        //        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        //            RotateBrick(Enums.Directions.LEFT);
 
-    //        else if (Input.GetKeyDown(KeyCode.Space))
-    //            DropBrick();
+        //        else if (Input.GetKeyDown(KeyCode.Space))
+        //            DropBrick();
 
-    //        else if (Input.GetKeyDown(KeyCode.D))
-    //            MoveBrick(Enums.Directions.BOTTOM);
+        //        else if (Input.GetKeyDown(KeyCode.D))
+        //            MoveBrick(Enums.Directions.BOTTOM);
 
-    //        else if (Input.GetKeyDown(KeyCode.Alpha1))
-    //            RotateBrickFaces(Enums.Directions.RIGHT);
+        //        else if (Input.GetKeyDown(KeyCode.Alpha1))
+        //            RotateBrickFaces(Enums.Directions.RIGHT);
 
-    //        else if (Input.GetKeyDown(KeyCode.Alpha2))
-    //            RotateBrickFaces(Enums.Directions.LEFT);
+        //        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        //            RotateBrickFaces(Enums.Directions.LEFT);
 
-    //        else if (Input.GetKeyDown(KeyCode.Alpha3))
-    //            RotateBrickFaces(Enums.Directions.TOP);
+        //        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        //            RotateBrickFaces(Enums.Directions.TOP);
 
-    //        else if (Input.GetKeyDown(KeyCode.Alpha4))
-    //            RotateBrickFaces(Enums.Directions.BOTTOM);
+        //        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        //            RotateBrickFaces(Enums.Directions.BOTTOM);
 
-    //    }
-    //}
+        //    }
+    }
 
     public void RotateBrick(Enums.Directions direction)
     {

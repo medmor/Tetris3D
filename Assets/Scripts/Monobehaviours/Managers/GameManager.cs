@@ -5,11 +5,15 @@ using UnityEngine.SceneManagement;
 public class GameManager : Manager<GameManager>
 {
     private string currentLevelName = "";
-    public Enums.GameState currentGameState { get; private set; } = Enums.GameState.PREGAME;
+    public Enums.GameState CurrentGameState { get; private set; } = Enums.GameState.PREGAME;
     public Events.EventGameState OnGameStateChanged;
+
+    public Enums.GameMode GameMode { get; set; }
 
     public GameObject[] SystemPrefabs;
     private List<GameObject> instancedSystemPrefabs;
+
+
 
     private void Start()
     {
@@ -45,9 +49,8 @@ public class GameManager : Manager<GameManager>
         if (currentLevelName == "Main")
         {
             UIManager.Instance.HideMainMenu();
-            UpdateState(Enums.GameState.RUNNING);
             UIManager.Instance.GetBoardManager();
-            //Instance.InitSessions();
+            UpdateState(Enums.GameState.RUNNING);
         }
         else if(currentLevelName == "Boot")
         {
@@ -57,10 +60,9 @@ public class GameManager : Manager<GameManager>
 
     public void UpdateState(Enums.GameState state)
     {
-        //Enums.GameState previousGameState = CurrentGameState;
-        currentGameState = state;
+        CurrentGameState = state;
 
-        switch (currentGameState)
+        switch (CurrentGameState)
         {
             case Enums.GameState.PREGAME:
                 Time.timeScale = 1.0f;
@@ -77,12 +79,11 @@ public class GameManager : Manager<GameManager>
             default:
                 break;
         }
-        //OnGameStateChanged.Invoke(CurrentGameState, previousGameState);
     }
 
     public void TogglePause()
     {
-        UpdateState(currentGameState == Enums.GameState.RUNNING 
+        UpdateState(CurrentGameState == Enums.GameState.RUNNING 
             ? Enums.GameState.PAUSED : Enums.GameState.RUNNING);
     }
     public void RestartGame()

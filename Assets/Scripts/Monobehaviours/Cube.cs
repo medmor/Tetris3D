@@ -5,6 +5,7 @@ public delegate void RemoveLine();
 public class Cube : MonoBehaviour
 {
     public bool IsActiveInBoard = false;
+
     private Dictionary<Vector3, Enums.Directions> faces = new Dictionary<Vector3, Enums.Directions>()
     {
         {new Vector3(0.0f, 0.0f, 1.0f), Enums.Directions.FRONT},
@@ -15,6 +16,9 @@ public class Cube : MonoBehaviour
         {new Vector3(1.0f, 0.0f, 0.0f), Enums.Directions.RIGHT},
     };
     private Vector3 faceVector = new Vector3();
+
+    public int Id { get; set; }
+
     void Start()
     {
         initColors();

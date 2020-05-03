@@ -2659,6 +2659,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainMenu: {fileID: 7875741702574402003}
   dummyCammera: {fileID: 7875741701212065377}
+  normalModeButton: {fileID: 7875741703138310219}
+  hardModeButton: {fileID: 5377651213138730515}
   gameInfo: {fileID: 7053455266409193019}
   score: {fileID: 8054636649907083475}
   level: {fileID: 3492631144972538911}
@@ -2827,9 +2829,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3611388022350327321, guid: 79d603fb5c8111946864e6ee5150d3d4,
-          type: 3}
-        m_MethodName: LoadLevel
+      - m_Target: {fileID: 0}
+        m_MethodName: 
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

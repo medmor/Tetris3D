@@ -11,6 +11,13 @@ public static class Enums
         PAUSED,
         POSTGAME
     }
+
+    public enum GameMode
+    {
+        NORMAL,
+        HARD,
+        EXTREAM
+    }
     public enum BrickType
     {
         ZSHAPE,

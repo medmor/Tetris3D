@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-public class CubeInput : MonoBehaviour
+public class SideBrick : Brick
 {
     Vector2 firstPressPos;
     Vector2 secondPressPos;
@@ -9,12 +10,10 @@ public class CubeInput : MonoBehaviour
     Cube touchedCube;
     [SerializeField] Camera sideCamera = default;
 
-    void Update()
-    {
-        Swipe();
-    }
+    private Enums.Directions swipDirection = default;
 
-    public void Swipe()
+
+    public Tuple<Enums.Directions, int> Swipe()
     {
         if (Input.touches.Length > 0)
         {
@@ -38,18 +37,26 @@ public class CubeInput : MonoBehaviour
                 {
                     currentSwipe.Normalize();
                     if (Mathf.Abs(currentSwipe.x) > Mathf.Abs(currentSwipe.y))
+                    {
                         if (currentSwipe.x < 0)
-                            touchedCube.FlipCube(Enums.Directions.LEFT);
+                            swipDirection = Enums.Directions.LEFT;
+
                         else
-                            touchedCube.FlipCube(Enums.Directions.RIGHT);
+                            swipDirection = Enums.Directions.RIGHT;
+                    }
                     else
                         if (currentSwipe.y < 0)
-                            touchedCube.FlipCube(Enums.Directions.BOTTOM);
+                            swipDirection = Enums.Directions.BOTTOM;
                         else
-                            touchedCube.FlipCube(Enums.Directions.TOP);
+                            swipDirection = Enums.Directions.TOP;
+    
+                    touchedCube.FlipCube(swipDirection);
+                    int temp = touchedCube.Id;
                     touchedCube = null;
+                    return new Tuple<Enums.Directions, int>(swipDirection, temp);
                 }
             }
         }
+        return null;
     }
 }

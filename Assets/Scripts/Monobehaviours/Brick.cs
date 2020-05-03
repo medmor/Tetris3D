@@ -26,6 +26,8 @@ public class Brick : MonoBehaviour
         for (int i = 0; i < ALLSHAPES.GetLength(1); i++)
         {
             brickShape[i].SetPosition(new Vector3(ALLSHAPES[index, i, 0] * off, ALLSHAPES[index, i, 1] * off, 0));
+            brickShape[i].transform.rotation = Quaternion.identity;
+            brickShape[i].Id = i;
         }
     }
 

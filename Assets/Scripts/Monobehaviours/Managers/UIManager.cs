@@ -4,9 +4,12 @@ using UnityEngine.UI;
 
 public class UIManager : Manager<UIManager>
 {
-    BoardManager boardManager = default;
+    BoardManager boardManager = default; //Instantiated when the level load in the game manager
+
     [SerializeField] private GameObject mainMenu = default;
     [SerializeField] private Camera dummyCammera = default;
+    [SerializeField] private Button normalModeButton = default;
+    [SerializeField] private Button hardModeButton = default;
 
     [SerializeField] private GameObject gameInfo = default;
     [SerializeField] private TextMeshProUGUI score = default;
@@ -23,6 +26,16 @@ public class UIManager : Manager<UIManager>
 
     private void Start()
     {
+        normalModeButton.onClick.AddListener(() =>
+        {
+            GameManager.Instance.LoadLevel("Main");
+            GameManager.Instance.GameMode = Enums.GameMode.NORMAL;
+        });
+        hardModeButton.onClick.AddListener(() =>
+        {
+            GameManager.Instance.LoadLevel("Main");
+            GameManager.Instance.GameMode = Enums.GameMode.HARD;
+        });
         leftButton.onClick.AddListener(() => {
             boardManager.MoveBrick(Enums.Directions.LEFT);
         });

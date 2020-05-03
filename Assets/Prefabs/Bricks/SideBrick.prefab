@@ -242,13 +242,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1087010500418051821}
-  m_LocalRotation: {x: 0.35355338, y: -0.35355338, z: 0.1464466, w: 0.8535535}
-  m_LocalPosition: {x: -8.5, y: 2.8, z: 7}
+  m_LocalRotation: {x: 0.179467, y: -0.17074049, z: 0.03164489, w: 0.9683171}
+  m_LocalPosition: {x: 1.7, y: 1.5, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1087010500156884859}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 45, y: -45, z: 0}
+  m_LocalEulerAnglesHint: {x: 21, y: -20, z: 0}
 --- !u!20 &1087010500418051810
 Camera:
   m_ObjectHideFlags: 0
@@ -276,7 +276,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 2.6
+  orthographic size: 4
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -729,7 +729,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4626562361926921690}
-  - component: {fileID: 9123205105517423187}
   - component: {fileID: 4626562361926921689}
   m_Layer: 0
   m_Name: sideBrick
@@ -746,8 +745,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4626562361926921691}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -12.03, y: -2.49, z: 11.2}
-  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2002206180731830314}
   - {fileID: 2866791935126554628}
@@ -756,24 +755,6 @@ Transform:
   m_Father: {fileID: 1087010500156884859}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9123205105517423187
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4626562361926921691}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 918b2102d472fe9438e8effbefcb815a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  brickType: 2
-  brickShape:
-  - {fileID: 2002206180731830316}
-  - {fileID: 2866791935126554626}
-  - {fileID: 4085840502512264925}
-  - {fileID: 1373703759672659174}
 --- !u!114 &4626562361926921689
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -786,3 +767,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 117a4427350671945b4265728ad5c89c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  brickType: 0
+  brickShape:
+  - {fileID: 2002206180731830316}
+  - {fileID: 2866791935126554626}
+  - {fileID: 4085840502512264925}
+  - {fileID: 1373703759672659174}
+  sideCamera: {fileID: 1087010500418051810}
