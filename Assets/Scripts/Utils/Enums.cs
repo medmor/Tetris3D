@@ -9,7 +9,14 @@ public static class Enums
         PREGAME,
         RUNNING,
         PAUSED,
-        POSTGAME
+        GAMEOVER
+    }
+
+    public enum BoardStats
+    {
+        GENERATING_NEW_BRICK,
+        FALLING,
+        UPDATING_BOARD
     }
 
     public enum GameMode
@@ -61,10 +68,5 @@ public static class Enums
         GAMEOVER
     }
 
-    public enum BoardStats
-    {
-        GENERATING_NEW_BRICK,
-        FALLING,
-        UPDATING_BOARD
-    }
+
 }

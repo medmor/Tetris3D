@@ -16,7 +16,7 @@ public class Brick : MonoBehaviour
                                     };
 
     public Enums.BrickType brickType;
-    public Cube[] brickShape  = new Cube[4];
+    public Cube1[] brickShape  = new Cube1[4];
 
     public void SetShape(Enums.BrickType type, bool offset = false)
     {
@@ -64,7 +64,7 @@ public class Brick : MonoBehaviour
         if (canRotate(shape, boardWidth, boardHeight, shapeAt))
         {
             SoundManager.Instance.PlaySound(Enums.SoundsEffects.ROTATION);
-            transform.Rotate(new Vector3(0, 0, 90));
+            transform.Rotate(new Vector3(0, 0, -90));
         }
     }
 
@@ -84,7 +84,7 @@ public class Brick : MonoBehaviour
         }
         if (canRotate(shape, boardWidth, boardHeight, shapeAt))
         {
-            transform.Rotate(new Vector3(0, 0, -90));
+            transform.Rotate(new Vector3(0, 0, 90));
             SoundManager.Instance.PlaySound(Enums.SoundsEffects.ROTATION);
         }
     }

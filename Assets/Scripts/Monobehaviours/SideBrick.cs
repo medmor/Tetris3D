@@ -7,7 +7,7 @@ public class SideBrick : Brick
     Vector2 secondPressPos;
     Vector2 currentSwipe;
 
-    Cube touchedCube;
+    Cube1 touchedCube;
     [SerializeField] Camera sideCamera = default;
 
     private Enums.Directions swipDirection = default;
@@ -25,8 +25,8 @@ public class SideBrick : Brick
             RaycastHit hit;
 
             if (Physics.Raycast(ray, out hit) && touchedCube == null)
-                touchedCube = hit.collider.gameObject.GetComponent<Cube>();
-
+                touchedCube = hit.collider.gameObject.GetComponent<Cube1>();
+            
             if (t.phase == TouchPhase.Ended && touchedCube)
             {
                 secondPressPos = new Vector2(t.position.x, t.position.y);

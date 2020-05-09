@@ -7,13 +7,10 @@ public class GameManager : Manager<GameManager>
     private string currentLevelName = "";
     public Enums.GameState CurrentGameState { get; private set; } = Enums.GameState.PREGAME;
     public Events.EventGameState OnGameStateChanged;
-
     public Enums.GameMode GameMode { get; set; }
 
     public GameObject[] SystemPrefabs;
     private List<GameObject> instancedSystemPrefabs;
-
-
 
     private void Start()
     {

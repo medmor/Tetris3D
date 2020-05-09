@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEngine.SceneManagement;
 
 public class BoardManager : MonoBehaviour
 {
@@ -28,13 +27,16 @@ public class BoardManager : MonoBehaviour
         { 0, 400, 1000, 3000, 12000},    };
     private readonly int[] SPEED_TABLE = new int[30] { 48, 43, 38, 33, 28, 23, 18, 13, 8, 6, 5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1 };
     private const int BOARD_WIDTH = 10;
-    private const int BOARD_HEIGHT = 21;
+    private const int BOARD_HEIGHT = 20;
 
-    private float speed;
-    private int numLinesRemoved = 0;
-    private int score = 0;
-    private int level = 4;
-    private int linesToLevel;
+    [SerializeField] Camera sideCamera = default;
+
+    [SerializeField] Player player = default;
+    //float speed { get; }
+    //int numLinesRemoved { get; }
+    //private int score {get;}
+    //int level { get; }
+    //int linesToLevel { get; }
 
     [SerializeField] private Brick currentBrick = default;
     [SerializeField] private Brick dropBrick = default;
@@ -42,20 +44,20 @@ public class BoardManager : MonoBehaviour
     [SerializeField] private SideBrick sideBrick = default;
     [SerializeField] private GameObject cubePrefab = default;
 
-    private Cube[] board;
-    [SerializeField] private Material gridMaterial = default;
-    [SerializeField] private Material cubeMaterial = default;
+    private Cube1[] board;
 
-    private Enums.BoardStats boardState;
+    public Enums.BoardStats boardState;
     #endregion
 
 
     #region Game Initiation
+
     private void Start()
     {
         GameManager.Instance.UpdateState(Enums.GameState.RUNNING);// to review ??
-        Init();
+        init();
         StartCoroutine(nextTick());
+        player.InitPlayer();
     }
     private IEnumerator nextTick()
     {
@@ -67,24 +69,22 @@ public class BoardManager : MonoBehaviour
                 else if(boardState == Enums.BoardStats.FALLING 
                     && !currentBrick.Move(Enums.Directions.BOTTOM, BOARD_WIDTH, ShapeAt))
                     updateBoard();
-             yield return new WaitForSeconds(speed);
+             yield return new WaitForSeconds(player.speed);
         }
         
     }
-    void Init()
+    private void init()
     {
-        linesToLevel = level * 10 + 10; // depends on starting level
-        speed = SPEED_TABLE[level] * 0.017f;
+        player.SetLinesToLevelUp(player.level * 10 + 10);  // depends on starting level
+        player.SetSpeed(SPEED_TABLE[player.level] * 0.017f);
 
-        board = new Cube[BOARD_WIDTH * BOARD_HEIGHT];
-        for (int i = 0; i < BOARD_HEIGHT * BOARD_WIDTH; i++)
+        board = new Cube1[BOARD_WIDTH * BOARD_HEIGHT + 1];
+        for (int i = 0; i < board.Length; i++)
         {
-            board[i] = Instantiate(cubePrefab).GetComponent<Cube>();
+            board[i] = Instantiate(cubePrefab).GetComponent<Cube1>();
             board[i].transform.position = new Vector3(Mathf.Floor(i % BOARD_WIDTH), i/BOARD_WIDTH, 0);
-            board[i].gameObject.GetComponent<MeshRenderer>().material = gridMaterial;
             board[i].transform.SetParent(transform);
-            if (i >= (BOARD_HEIGHT - 1) * BOARD_WIDTH)
-                board[i].GetComponent<Renderer>().enabled = false;
+            board[i].gameObject.SetActive(false);
         }
         
         currentBrick.gameObject.SetActive(false);
@@ -98,9 +98,32 @@ public class BoardManager : MonoBehaviour
         }
         newBrick();
     }
+    private IEnumerator gameOver()
+    {
+        for (int i = 0; i < board.Length; i++)
+        {
+            board[i].gameObject.SetActive(true);
+            board[i].transform.rotation = Quaternion.identity;
+            yield return new WaitForEndOfFrame();
+        }
+
+        PlayerPrefs.SetInt("level", player.level);
+
+        if (PlayerPrefs.HasKey("bestScore"))
+        {
+            int bestScore = PlayerPrefs.GetInt("bestScore");
+            if (bestScore < player.score)
+                PlayerPrefs.SetInt("bestScore", player.score);
+        }
+        else
+        {
+            PlayerPrefs.SetInt("bestScore", player.score);
+        }
+        PlayerPrefs.SetInt("level", player.level);
+        UIManager.Instance.ShowGameOverMenu(player.score);
+    }
 
     #endregion
-
 
     #region Game Updates
     private void updateBoard()
@@ -111,10 +134,8 @@ public class BoardManager : MonoBehaviour
         {
             var pos = currentBrick.brickShape[i].transform.position;
             var index = Mathf.RoundToInt(pos.y * BOARD_WIDTH + pos.x);
-
-            board[index].IsActiveInBoard = true;
+            board[index].gameObject.SetActive(true);
             board[index].transform.rotation = currentBrick.brickShape[i].transform.rotation;
-            board[index].gameObject.GetComponent<MeshRenderer>().material = cubeMaterial;
          }
         currentBrick.gameObject.SetActive(false);
         dropBrick.gameObject.SetActive(false);
@@ -131,12 +152,12 @@ public class BoardManager : MonoBehaviour
         currentBrick.transform.rotation = Quaternion.identity;
         dropBrick.transform.rotation = Quaternion.identity;
         dropBrick.gameObject.SetActive(true);
-        currentBrick.transform.position = new Vector3(BOARD_WIDTH / 2, BOARD_HEIGHT-1, 0);
+        currentBrick.transform.position = new Vector3(BOARD_WIDTH / 2, BOARD_HEIGHT, 0);
         updateDropBrick();
         if (!currentBrick.Move(Enums.Directions.BOTTOM, BOARD_WIDTH, ShapeAt))
         {
-            //currentBrick.SetShape(0);
-            GameManager.Instance.LoadLevel("Boot");
+            StopAllCoroutines();
+            StartCoroutine(gameOver());
         }
         boardState = Enums.BoardStats.FALLING;
     }
@@ -153,10 +174,9 @@ public class BoardManager : MonoBehaviour
     {
         dropBrick.transform.position = currentBrick.transform.position;
         dropBrick.transform.rotation = currentBrick.transform.rotation;
-        //sideBrick.transform.rotation = currentBrick.transform.rotation;
         dropBrick.DropDown(BOARD_WIDTH, ShapeAt);
     }
-    public bool ShapeAt(int x, int y) => board[y * BOARD_WIDTH + x].IsActiveInBoard;
+    public bool ShapeAt(int x, int y) => board[y * BOARD_WIDTH + x].gameObject.activeSelf;
     #endregion
 
 
@@ -213,17 +233,17 @@ public class BoardManager : MonoBehaviour
 
     private void updateInfo(int numFullLines)
     {
-        numLinesRemoved += numFullLines;
-        UIManager.Instance.UpdateLines(numLinesRemoved);
-        score += SCORE_TABLE[level, numFullLines];
-        UIManager.Instance.UpdateScore(score);
-        linesToLevel -= numFullLines;
-        if (linesToLevel <= 0)
+        player.SetLinesRemoved(player.linesRemoved + numFullLines);
+        UIManager.Instance.UpdateLines(player.linesRemoved);
+        player.SetScore(SCORE_TABLE[player.level, numFullLines]);
+        UIManager.Instance.UpdateScore(player.score);
+        player.SetLinesToLevelUp(player.linesToLevelUp - numFullLines);
+        if (player.linesToLevelUp <= 0)
         {
-            level++;
-            UIManager.Instance.UpdateLevel(level);
-            linesToLevel = 10;
-            speed = SPEED_TABLE[level] * 0.017f;
+            player.SetLevel(player.level + 1);
+            UIManager.Instance.UpdateLevel(player.level);
+            player.SetLinesToLevelUp(player.linesToLevelUp + 10);
+            player.SetSpeed(SPEED_TABLE[player.level] * 0.017f);
         }
     }
 
@@ -239,7 +259,7 @@ public class BoardManager : MonoBehaviour
     {
         for (int j = 0; j < BOARD_WIDTH; j++)
         {
-            Cube cube = board[(fullLineIndex * BOARD_WIDTH) + j];
+            Cube1 cube = board[(fullLineIndex * BOARD_WIDTH) + j];
             cube.Shake(1, () => {
                 count++;
                 if (count == BOARD_WIDTH)
@@ -250,8 +270,8 @@ public class BoardManager : MonoBehaviour
                         {
                             cube = board[(k * BOARD_WIDTH) + jj];
                             var topCube = board[((k + 1) * BOARD_WIDTH) + jj];
-                            cube.IsActiveInBoard = ShapeAt(jj, k + 1);
-                            cube.GetComponent<MeshRenderer>().material = topCube.GetComponent<MeshRenderer>().material;
+                            cube.gameObject.SetActive(ShapeAt(jj, k + 1));
+                            //cube.GetComponent<MeshRenderer>().material = topCube.GetComponent<MeshRenderer>().material;
                             cube.transform.rotation = topCube.transform.rotation;
                         }
                     }
@@ -265,50 +285,28 @@ public class BoardManager : MonoBehaviour
     #region InputHandling
     private void Update()
     {
-        var swipInfo = sideBrick.Swipe();
-        if(swipInfo != null)
+        InputManager.Instance.WindowsInput(this);
+
+        var swipInfo = InputManager.Instance.Swipe(sideCamera);
+        if(swipInfo != null && swipInfo.Item2 == -1)
         {
-            for (int i = 0; i < currentBrick.brickShape.Length; i++)
+            for (int i = 0; i < 4; i++)
             {
-                if(currentBrick.brickShape[i].Id == swipInfo.Item2)
+                sideBrick.brickShape[i].FlipCube(swipInfo.Item1);
+                currentBrick.brickShape[i].FlipCube(swipInfo.Item1);
+            }
+        }
+        else if (swipInfo != null && swipInfo.Item2 > -1)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (currentBrick.brickShape[i].Id == swipInfo.Item2)
                 {
+                    sideBrick.brickShape[i].FlipCube(swipInfo.Item1);
                     currentBrick.brickShape[i].FlipCube(swipInfo.Item1);
                 }
             }
         }
-        //    if (boardState == Enums.BoardStats.FALLING)
-        //    {
-        //        if (Input.GetKeyDown(KeyCode.LeftArrow))
-        //            MoveBrick(Enums.Directions.LEFT);
-
-        //        else if (Input.GetKeyDown(KeyCode.RightArrow))
-        //            MoveBrick(Enums.Directions.RIGHT);
-
-        //        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        //            RotateBrick(Enums.Directions.RIGHT);
-
-        //        else if (Input.GetKeyDown(KeyCode.UpArrow))
-        //            RotateBrick(Enums.Directions.LEFT);
-
-        //        else if (Input.GetKeyDown(KeyCode.Space))
-        //            DropBrick();
-
-        //        else if (Input.GetKeyDown(KeyCode.D))
-        //            MoveBrick(Enums.Directions.BOTTOM);
-
-        //        else if (Input.GetKeyDown(KeyCode.Alpha1))
-        //            RotateBrickFaces(Enums.Directions.RIGHT);
-
-        //        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        //            RotateBrickFaces(Enums.Directions.LEFT);
-
-        //        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        //            RotateBrickFaces(Enums.Directions.TOP);
-
-        //        else if (Input.GetKeyDown(KeyCode.Alpha4))
-        //            RotateBrickFaces(Enums.Directions.BOTTOM);
-
-        //    }
     }
 
     public void RotateBrick(Enums.Directions direction)
@@ -375,4 +373,5 @@ public class BoardManager : MonoBehaviour
     }
 
     #endregion
+
 }
