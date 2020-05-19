@@ -15,7 +15,7 @@ public class InputManager : Manager<InputManager>
 
     Enums.Directions swipDirection = default;
 
-    public void WindowsInput(BoardManager boardManager)
+    public void WindowsInput(GameBoard boardManager)
     {
         if (boardManager.boardState == Enums.BoardStats.FALLING)
         {

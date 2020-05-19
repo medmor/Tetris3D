@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
-public class BoardManager : MonoBehaviour
+public class GameBoard : MonoBehaviour
 {
     #region Declarations
     private readonly int[,] SCORE_TABLE = new int[20, 5] {
@@ -32,16 +33,11 @@ public class BoardManager : MonoBehaviour
     [SerializeField] Camera sideCamera = default;
 
     [SerializeField] Player player = default;
-    //float speed { get; }
-    //int numLinesRemoved { get; }
-    //private int score {get;}
-    //int level { get; }
-    //int linesToLevel { get; }
 
     [SerializeField] private Brick currentBrick = default;
     [SerializeField] private Brick dropBrick = default;
-    [SerializeField] private Brick[] nextBricks = default;
     [SerializeField] private SideBrick sideBrick = default;
+    [SerializeField] private Brick[] nextBricks = default;
     [SerializeField] private GameObject cubePrefab = default;
 
     private Cube1[] board;
@@ -55,9 +51,10 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         GameManager.Instance.UpdateState(Enums.GameState.RUNNING);// to review ??
+        UIManager.Instance.ResetInfo();
+        player.InitPlayer();
         init();
         StartCoroutine(nextTick());
-        player.InitPlayer();
     }
     private IEnumerator nextTick()
     {
@@ -77,6 +74,9 @@ public class BoardManager : MonoBehaviour
     {
         player.SetLinesToLevelUp(player.level * 10 + 10);  // depends on starting level
         player.SetSpeed(SPEED_TABLE[player.level] * 0.017f);
+        UIManager.Instance.UpdateLevel(player.level);
+        UIManager.Instance.UpdateLines(player.linesRemoved);
+        UIManager.Instance.UpdateLines(player.score);
 
         board = new Cube1[BOARD_WIDTH * BOARD_HEIGHT + 1];
         for (int i = 0; i < board.Length; i++)
@@ -92,34 +92,35 @@ public class BoardManager : MonoBehaviour
 
         for (int i = 0; i < nextBricks.Length; i++)
         {
-            nextBricks[i].transform.position = new Vector3(11.5f, 18 - i * 3, 0);
+            nextBricks[i].transform.position = new Vector3(11.5f, 19 - i * 2, 0);
             nextBricks[i].SetRandomShape();
+            if(GameManager.Instance.GameMode == Enums.GameMode.HARD)
+                nextBricks[i].RandomFaceColors(1);
             nextBricks[i].transform.localScale *= .6f;
         }
         newBrick();
     }
     private IEnumerator gameOver()
     {
-        for (int i = 0; i < board.Length; i++)
+        for (int i = 0; i < board.Length-1; i++)
         {
             board[i].gameObject.SetActive(true);
             board[i].transform.rotation = Quaternion.identity;
             yield return new WaitForEndOfFrame();
         }
 
-        PlayerPrefs.SetInt("level", player.level);
+        GameSaveManager.Instance.SetLevel(GameManager.Instance.GameMode, player.level);
 
-        if (PlayerPrefs.HasKey("bestScore"))
+        if (GameSaveManager.Instance.IsBestScoreSaved(GameManager.Instance.GameMode))
         {
-            int bestScore = PlayerPrefs.GetInt("bestScore");
+            int bestScore = GameSaveManager.Instance.GetBestScore(GameManager.Instance.GameMode);
             if (bestScore < player.score)
-                PlayerPrefs.SetInt("bestScore", player.score);
+                GameSaveManager.Instance.SetBestScore(GameManager.Instance.GameMode, player.score);
         }
         else
         {
-            PlayerPrefs.SetInt("bestScore", player.score);
+            GameSaveManager.Instance.SetBestScore(GameManager.Instance.GameMode, player.score);
         }
-        PlayerPrefs.SetInt("level", player.level);
         UIManager.Instance.ShowGameOverMenu(player.score);
     }
 
@@ -152,7 +153,7 @@ public class BoardManager : MonoBehaviour
         currentBrick.transform.rotation = Quaternion.identity;
         dropBrick.transform.rotation = Quaternion.identity;
         dropBrick.gameObject.SetActive(true);
-        currentBrick.transform.position = new Vector3(BOARD_WIDTH / 2, BOARD_HEIGHT, 0);
+        currentBrick.transform.position = new Vector3(BOARD_WIDTH / 2, BOARD_HEIGHT - 1, 0);
         updateDropBrick();
         if (!currentBrick.Move(Enums.Directions.BOTTOM, BOARD_WIDTH, ShapeAt))
         {
@@ -163,12 +164,16 @@ public class BoardManager : MonoBehaviour
     }
     private void updateNextBricks()
     {
-        currentBrick.SetShape(nextBricks[0].brickType);
-        sideBrick.SetShape(currentBrick.brickType, true);
-        dropBrick.SetShape(nextBricks[0].brickType);
-        nextBricks[0].SetShape(nextBricks[1].brickType);
-        nextBricks[1].SetShape(nextBricks[2].brickType);
+        currentBrick.CopyShape(nextBricks[0]);
+        sideBrick.CopyShape(currentBrick, true);
+        dropBrick.CopyShape(nextBricks[0]);
+        nextBricks[0].CopyShape(nextBricks[1]);
+        nextBricks[1].CopyShape(nextBricks[2]);
         nextBricks[2].SetRandomShape();
+        if(GameManager.Instance.GameMode == Enums.GameMode.HARD)
+        {
+            nextBricks[2].RandomFaceColors(1);
+        }
     }
     private void updateDropBrick()
     {
@@ -182,6 +187,7 @@ public class BoardManager : MonoBehaviour
 
     #region RemoveFullLines
     private Enums.Directions firstCubeLineDirection;
+    private List<Enums.Directions> hardLinesDirections = new List<Enums.Directions>();
     private void removeFullLinesLogic()
     {
         int numFullLines = getAndCallRemoveFullLines();
@@ -196,12 +202,14 @@ public class BoardManager : MonoBehaviour
             boardState = Enums.BoardStats.GENERATING_NEW_BRICK;
         }
     }
+
     private int getAndCallRemoveFullLines()
     {
         int numFullLines = 0;
         for (int i = BOARD_HEIGHT - 1; i >= 0; i--)
         {
             firstCubeLineDirection = board[i * BOARD_WIDTH].FrontCurrentFace();
+            hardLinesDirections.Add(firstCubeLineDirection);
             bool lineIsFull = true;
             for (int j = 0; j < BOARD_WIDTH; j++)
             {
@@ -235,7 +243,10 @@ public class BoardManager : MonoBehaviour
     {
         player.SetLinesRemoved(player.linesRemoved + numFullLines);
         UIManager.Instance.UpdateLines(player.linesRemoved);
-        player.SetScore(SCORE_TABLE[player.level, numFullLines]);
+        int score = player.score + SCORE_TABLE[player.level, numFullLines];
+        if (GameManager.Instance.GameMode == Enums.GameMode.HARD)
+            score *= hardLinesDirections.Count;
+        player.SetScore(score);
         UIManager.Instance.UpdateScore(player.score);
         player.SetLinesToLevelUp(player.linesToLevelUp - numFullLines);
         if (player.linesToLevelUp <= 0)

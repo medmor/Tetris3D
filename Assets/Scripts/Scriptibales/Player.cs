@@ -9,12 +9,15 @@ public class Player : ScriptableObject
     [field: SerializeField] public int score { get; private set; }
     [field: SerializeField] public int level { get; private set; }
     [field: SerializeField] public int linesToLevelUp { get; private set; }
+
     #endregion
 
     public void InitPlayer()
     {
-        if(PlayerPrefs.HasKey("level"))
-            SetLevel(PlayerPrefs.GetInt("level"));
+        if (GameSaveManager.Instance.IsLevelSaved(GameManager.Instance.GameMode))
+            SetLevel(GameSaveManager.Instance.GetLevel(GameManager.Instance.GameMode));
+        score = 0;
+        linesRemoved = 0;
     }
 
     public void SetSpeed(float value) => speed = value;

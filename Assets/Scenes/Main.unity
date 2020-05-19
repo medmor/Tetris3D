@@ -1002,7 +1002,7 @@ GameObject:
   - component: {fileID: 1344797443}
   - component: {fileID: 1344797442}
   m_Layer: 0
-  m_Name: BoardManger
+  m_Name: GameBoard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1017,18 +1017,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1344797441}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 227da4fb0225999438a965fd5620d910, type: 3}
+  m_Script: {fileID: 11500000, guid: c2b911d93b217ac42b4247d5d74be425, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   sideCamera: {fileID: 379309942}
   player: {fileID: 11400000, guid: c6b7e698ab875f6478a3d0f2f9883dea, type: 2}
   currentBrick: {fileID: 977490266}
   dropBrick: {fileID: 509866408}
+  sideBrick: {fileID: 1614210474}
   nextBricks:
   - {fileID: 1473230495}
   - {fileID: 2101093055}
   - {fileID: 61700688}
-  sideBrick: {fileID: 1614210474}
   cubePrefab: {fileID: 6841028057293822979, guid: ea808cd7b0a2df144aed27c22223e801,
     type: 3}
   boardState: 0

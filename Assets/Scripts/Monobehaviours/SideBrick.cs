@@ -12,7 +12,6 @@ public class SideBrick : Brick
 
     private Enums.Directions swipDirection = default;
 
-
     public Tuple<Enums.Directions, int> Swipe()
     {
         if (Input.touches.Length > 0)

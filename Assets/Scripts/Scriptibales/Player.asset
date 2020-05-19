@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e16d4067980a924db9e55079b62783e, type: 3}
   m_Name: Player
   m_EditorClassIdentifier: 
-  <Name>k__BackingField: 
-  speed: 0
-  linesRemoved: 0
-  score: 0
-  level: 0
-  linesToLevelUp: 0
+  <speed>k__BackingField: 0.81600004
+  <linesRemoved>k__BackingField: 21
+  <score>k__BackingField: 2400
+  <level>k__BackingField: 2
+  <linesToLevelUp>k__BackingField: 10

@@ -238,4 +238,31 @@ public class Brick : MonoBehaviour
         return shape;
     }
 
+    public void RandomFaceColors(int facesFlipRate = 0)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            RotateFaces((Enums.Directions)UnityEngine.Random.Range(0,5));
+        }
+        if (facesFlipRate > 0)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if(UnityEngine.Random.Range(0,3) < facesFlipRate)
+                {
+                    brickShape[i].FlipCube((Enums.Directions)UnityEngine.Random.Range(0, 5));
+                }
+            }
+        }
+    }
+
+    public void CopyShape(Brick brick, bool offset = false)
+    {
+        SetShape(brick.brickType, offset);
+        for (int i = 0; i < 4; i++)
+        {
+            brickShape[i].transform.rotation = brick.brickShape[i].transform.rotation;
+        }
+    }
+
 }

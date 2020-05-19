@@ -45,7 +45,7 @@ public class GameManager : Manager<GameManager>
     {
         if (currentLevelName == "Main")
         {
-            UIManager.Instance.HideMainMenu();
+            //UIManager.Instance.HideMainMenu();
             UIManager.Instance.GetBoardManager();
             UpdateState(Enums.GameState.RUNNING);
         }
@@ -83,6 +83,7 @@ public class GameManager : Manager<GameManager>
         UpdateState(CurrentGameState == Enums.GameState.RUNNING 
             ? Enums.GameState.PAUSED : Enums.GameState.RUNNING);
     }
+
     public void RestartGame()
     {
         UpdateState(Enums.GameState.PREGAME);
