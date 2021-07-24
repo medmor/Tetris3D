@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Player
   m_EditorClassIdentifier: 
   <speed>k__BackingField: 0.81600004
-  <linesRemoved>k__BackingField: 21
-  <score>k__BackingField: 2400
-  <level>k__BackingField: 2
-  <linesToLevelUp>k__BackingField: 10
+  <linesRemoved>k__BackingField: 0
+  <score>k__BackingField: 0
+  <level>k__BackingField: 0
+  <linesToLevelUp>k__BackingField: 0

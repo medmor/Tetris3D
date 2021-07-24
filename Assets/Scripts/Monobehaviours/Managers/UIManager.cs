@@ -4,7 +4,8 @@ using UnityEngine.UI;
 
 public class UIManager : Manager<UIManager>
 {
-    GameBoard boardManager = default; //Instantiated when the level load in the game manager
+    //GameBoard boardManager = default; //Instantiated when the level load in the game manager
+
 
     [Header("Boot Menu")]
     [SerializeField] private GameObject mainMenu = default;
@@ -99,27 +100,31 @@ public class UIManager : Manager<UIManager>
     private void pauseListeners()
     {
         pause
-            .onClick.AddListener(() => {
-            GameManager.Instance.TogglePause();
-            pauseMenu.gameObject.SetActive(true);
-            pause.gameObject.SetActive(false);
-        });
+            .onClick.AddListener(() =>
+            {
+                GameManager.Instance.TogglePause();
+                pauseMenu.gameObject.SetActive(true);
+                pause.gameObject.SetActive(false);
+            });
 
         resume
-            .onClick.AddListener(() => {
-            GameManager.Instance.TogglePause();
-            pauseMenu.gameObject.SetActive(false);
-            pause.gameObject.SetActive(true);
-        });
+            .onClick.AddListener(() =>
+            {
+                GameManager.Instance.TogglePause();
+                pauseMenu.gameObject.SetActive(false);
+                pause.gameObject.SetActive(true);
+            });
 
         boot
-            .onClick.AddListener(() => {
-            pauseMenu.gameObject.SetActive(false);
-            GameManager.Instance.LoadLevel("Boot");
-        });
+            .onClick.AddListener(() =>
+            {
+                pauseMenu.gameObject.SetActive(false);
+                GameManager.Instance.LoadLevel("Boot");
+            });
 
         quite
-            .onClick.AddListener(() => {
+            .onClick.AddListener(() =>
+            {
                 Application.Quit();
             });
     }
@@ -154,44 +159,58 @@ public class UIManager : Manager<UIManager>
     private void controlsListeners()
     {
         leftButton
-            .onClick.AddListener(() => {
-            boardManager.MoveBrick(Enums.Directions.LEFT);
-        });
+            .onClick.AddListener(() =>
+            {
+                InputManager.Instance.ControlsInput.Invoke(Enums.ControlsEvents.LEFT);
+                //boardManager.MoveBrick(Enums.Directions.LEFT);
+            });
 
         rightButton
-            .onClick.AddListener(() => {
-            boardManager.MoveBrick(Enums.Directions.RIGHT);
-        });
+            .onClick.AddListener(() =>
+            {
+                InputManager.Instance.ControlsInput.Invoke(Enums.ControlsEvents.RIGHT);
+                //boardManager.MoveBrick(Enums.Directions.RIGHT);
+            });
 
         downButton
-            .onClick.AddListener(() => {
-            boardManager.MoveBrick(Enums.Directions.BOTTOM);
-        });
+            .onClick.AddListener(() =>
+            {
+                InputManager.Instance.ControlsInput.Invoke(Enums.ControlsEvents.DOWN);
+                //boardManager.MoveBrick(Enums.Directions.BOTTOM);
+            });
 
         dropButton
-            .onClick.AddListener(() => {
-            boardManager.DropBrick();
-        });
+            .onClick.AddListener(() =>
+            {
+                InputManager.Instance.ControlsInput.Invoke(Enums.ControlsEvents.DROP);
+                //boardManager.DropBrick();
+            });
 
         rotateRightButton
-            .onClick.AddListener(() => {
-            boardManager.RotateBrick(Enums.Directions.RIGHT);
-        });
+            .onClick.AddListener(() =>
+            {
+                InputManager.Instance.ControlsInput.Invoke(Enums.ControlsEvents.RIGHTROTATION);
+                //boardManager.RotateBrick(Enums.Directions.RIGHT);
+            });
 
         rotateLeftButton
-            .onClick.AddListener(() => {
-            boardManager.RotateBrick(Enums.Directions.LEFT);
-        });
+            .onClick.AddListener(() =>
+            {
+                InputManager.Instance.ControlsInput.Invoke(Enums.ControlsEvents.LEFTROTATION);
+                //boardManager.RotateBrick(Enums.Directions.LEFT);
+            });
     }
 
     private void gameOverListeners()
     {
-        restart.onClick.AddListener(() => {
+        restart.onClick.AddListener(() =>
+        {
             HideGameOverMenu();
             GameManager.Instance.LoadLevel("Main");
         });
         quite2.onClick.AddListener(() => { Application.Quit(); });
-        boot2.onClick.AddListener(() => {
+        boot2.onClick.AddListener(() =>
+        {
             HideGameOverMenu();
             GameManager.Instance.LoadLevel("Boot");
         });
@@ -202,12 +221,12 @@ public class UIManager : Manager<UIManager>
 
     public void HideMainMenu()
     {
-            GameManager.Instance.LoadLevel("Main");
-            controls.SetActive(true);
-            gameInfo.SetActive(true);
-            pause.gameObject.SetActive(true);
-            mainMenu.SetActive(false);
-            dummyCammera.gameObject.SetActive(false);
+        GameManager.Instance.LoadLevel("Main");
+        controls.SetActive(true);
+        gameInfo.SetActive(true);
+        pause.gameObject.SetActive(true);
+        mainMenu.SetActive(false);
+        dummyCammera.gameObject.SetActive(false);
     }
 
     public void ShowMainMenu()
@@ -236,7 +255,7 @@ public class UIManager : Manager<UIManager>
     #region Info Updates
     public void UpdateScore(int value) => score.text = value.ToString();
 
-    public void UpdateLevel(int value) => level.text = value.ToString();    
+    public void UpdateLevel(int value) => level.text = value.ToString();
 
     public void UpdateLines(int value) => lines.text = value.ToString();
 
@@ -252,6 +271,6 @@ public class UIManager : Manager<UIManager>
 
     #endregion
 
-    public void GetBoardManager() => boardManager = FindObjectOfType<GameBoard>();
+    //public void GetBoardManager() => boardManager = FindObjectOfType<GameBoard>();
 
 }

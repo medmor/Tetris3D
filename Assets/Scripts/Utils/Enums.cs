@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public static class Enums
+﻿public static class Enums
 {
     public enum GameState
     {
@@ -11,14 +7,12 @@ public static class Enums
         PAUSED,
         GAMEOVER
     }
-
     public enum BoardStats
     {
         GENERATING_NEW_BRICK,
         FALLING,
         UPDATING_BOARD
     }
-
     public enum GameMode
     {
         NORMAL,
@@ -35,7 +29,6 @@ public static class Enums
         LSHAPE,
         JSHAPE
     }
-
     public enum Directions
     {
         FRONT,
@@ -43,19 +36,8 @@ public static class Enums
         LEFT,
         RIGHT,
         TOP,
-        BOTTOM        
+        DOWN
     }
-
-    public enum FacesColors
-    {
-        WHITE,
-        RED,
-        BLUE,
-        ORANGE,
-        GREEN,
-        YELLOW
-    }
-
     public enum SoundsEffects
     {
         FALL,
@@ -67,6 +49,14 @@ public static class Enums
         FOUR_LINE,
         GAMEOVER
     }
-
+    public enum ControlsEvents
+    {
+        RIGHT,
+        DOWN,
+        LEFT,
+        DROP,
+        RIGHTROTATION,
+        LEFTROTATION
+    }
 
 }

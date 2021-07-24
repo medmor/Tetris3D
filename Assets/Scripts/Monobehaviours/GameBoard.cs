@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class GameBoard : MonoBehaviour
 {
@@ -27,10 +27,10 @@ public class GameBoard : MonoBehaviour
         { 0, 400, 1000, 3000, 12000},
         { 0, 400, 1000, 3000, 12000},    };
     private readonly int[] SPEED_TABLE = new int[30] { 48, 43, 38, 33, 28, 23, 18, 13, 8, 6, 5, 5, 5, 4, 4, 4, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1 };
-    private const int BOARD_WIDTH = 10;
-    private const int BOARD_HEIGHT = 20;
+    private const int BOARD_WIDTH = 7;
+    private const int BOARD_HEIGHT = 15;
 
-    [SerializeField] Camera sideCamera = default;
+    // [SerializeField] Camera sideCamera = default;
 
     [SerializeField] Player player = default;
 
@@ -40,11 +40,10 @@ public class GameBoard : MonoBehaviour
     [SerializeField] private Brick[] nextBricks = default;
     [SerializeField] private GameObject cubePrefab = default;
 
-    private Cube1[] board;
+    private Cube[] board;
 
     public Enums.BoardStats boardState;
     #endregion
-
 
     #region Game Initiation
 
@@ -54,21 +53,22 @@ public class GameBoard : MonoBehaviour
         UIManager.Instance.ResetInfo();
         player.InitPlayer();
         init();
+        ControlsInputEvetListning();
+        SwipInputEventListning();
         StartCoroutine(nextTick());
     }
     private IEnumerator nextTick()
     {
         while (true)
         {
-            //if(GameManager.Instance.CurrentGameState != Enums.GameState.PAUSED)
-                if (boardState == Enums.BoardStats.GENERATING_NEW_BRICK)
-                    newBrick();
-                else if(boardState == Enums.BoardStats.FALLING 
-                    && !currentBrick.Move(Enums.Directions.BOTTOM, BOARD_WIDTH, ShapeAt))
-                    updateBoard();
-             yield return new WaitForSeconds(player.speed);
+            if (boardState == Enums.BoardStats.GENERATING_NEW_BRICK)
+                newBrick();
+            else if (boardState == Enums.BoardStats.FALLING
+                && !currentBrick.Move(Enums.Directions.DOWN, BOARD_WIDTH, ShapeAt))
+                updateBoard();
+            yield return new WaitForSeconds(player.speed);
         }
-        
+
     }
     private void init()
     {
@@ -78,23 +78,25 @@ public class GameBoard : MonoBehaviour
         UIManager.Instance.UpdateLines(player.linesRemoved);
         UIManager.Instance.UpdateLines(player.score);
 
-        board = new Cube1[BOARD_WIDTH * BOARD_HEIGHT + 1];
+        board = new Cube[BOARD_WIDTH * BOARD_HEIGHT + 1];
         for (int i = 0; i < board.Length; i++)
         {
-            board[i] = Instantiate(cubePrefab).GetComponent<Cube1>();
-            board[i].transform.position = new Vector3(Mathf.Floor(i % BOARD_WIDTH), i/BOARD_WIDTH, 0);
+            board[i] = Instantiate(cubePrefab).GetComponent<Cube>();
             board[i].transform.SetParent(transform);
+            board[i].transform.position = new Vector3(Mathf.Floor(i % BOARD_WIDTH), i / BOARD_WIDTH, 0);
             board[i].gameObject.SetActive(false);
         }
-        
+
         currentBrick.gameObject.SetActive(false);
         dropBrick.gameObject.SetActive(false);
+        foreach (var c in dropBrick.brickShape)
+            c.transform.localScale = new Vector3(.98f, .98f, .98f);
 
         for (int i = 0; i < nextBricks.Length; i++)
         {
-            nextBricks[i].transform.position = new Vector3(11.5f, 19 - i * 2, 0);
+            nextBricks[i].transform.position = new Vector3(26f, 13 - i * 2, 0);
             nextBricks[i].SetRandomShape();
-            if(GameManager.Instance.GameMode == Enums.GameMode.HARD)
+            if (GameManager.Instance.GameMode == Enums.GameMode.HARD)
                 nextBricks[i].RandomFaceColors(1);
             nextBricks[i].transform.localScale *= .6f;
         }
@@ -102,11 +104,12 @@ public class GameBoard : MonoBehaviour
     }
     private IEnumerator gameOver()
     {
-        for (int i = 0; i < board.Length-1; i++)
+        SoundManager.Instance.PlaySound(Enums.SoundsEffects.GAMEOVER);
+        for (int i = 0; i < board.Length - 1; i++)
         {
             board[i].gameObject.SetActive(true);
             board[i].transform.rotation = Quaternion.identity;
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForFixedUpdate();
         }
 
         GameSaveManager.Instance.SetLevel(GameManager.Instance.GameMode, player.level);
@@ -137,7 +140,7 @@ public class GameBoard : MonoBehaviour
             var index = Mathf.RoundToInt(pos.y * BOARD_WIDTH + pos.x);
             board[index].gameObject.SetActive(true);
             board[index].transform.rotation = currentBrick.brickShape[i].transform.rotation;
-         }
+        }
         currentBrick.gameObject.SetActive(false);
         dropBrick.gameObject.SetActive(false);
         removeFullLinesLogic();
@@ -155,8 +158,10 @@ public class GameBoard : MonoBehaviour
         dropBrick.gameObject.SetActive(true);
         currentBrick.transform.position = new Vector3(BOARD_WIDTH / 2, BOARD_HEIGHT - 1, 0);
         updateDropBrick();
-        if (!currentBrick.Move(Enums.Directions.BOTTOM, BOARD_WIDTH, ShapeAt))
+        if (!currentBrick.Move(Enums.Directions.DOWN, BOARD_WIDTH, ShapeAt))
         {
+            GameManager.Instance.UpdateState(Enums.GameState.GAMEOVER);
+            dropBrick.gameObject.SetActive(false);
             StopAllCoroutines();
             StartCoroutine(gameOver());
         }
@@ -170,7 +175,7 @@ public class GameBoard : MonoBehaviour
         nextBricks[0].CopyShape(nextBricks[1]);
         nextBricks[1].CopyShape(nextBricks[2]);
         nextBricks[2].SetRandomShape();
-        if(GameManager.Instance.GameMode == Enums.GameMode.HARD)
+        if (GameManager.Instance.GameMode == Enums.GameMode.HARD)
         {
             nextBricks[2].RandomFaceColors(1);
         }
@@ -183,7 +188,6 @@ public class GameBoard : MonoBehaviour
     }
     public bool ShapeAt(int x, int y) => board[y * BOARD_WIDTH + x].gameObject.activeSelf;
     #endregion
-
 
     #region RemoveFullLines
     private Enums.Directions firstCubeLineDirection;
@@ -270,8 +274,9 @@ public class GameBoard : MonoBehaviour
     {
         for (int j = 0; j < BOARD_WIDTH; j++)
         {
-            Cube1 cube = board[(fullLineIndex * BOARD_WIDTH) + j];
-            cube.Shake(1, () => {
+            Cube cube = board[(fullLineIndex * BOARD_WIDTH) + j];
+            cube.Shake(1, () =>
+            {
                 count++;
                 if (count == BOARD_WIDTH)
                 {
@@ -294,73 +299,127 @@ public class GameBoard : MonoBehaviour
     #endregion
 
     #region InputHandling
-    private void Update()
-    {
-        InputManager.Instance.WindowsInput(this);
+    //private void Update()
+    //{
+    //    //InputManager.Instance.KeyBoardInput(this);
 
-        var swipInfo = InputManager.Instance.Swipe(sideCamera);
-        if(swipInfo != null && swipInfo.Item2 == -1)
+    //    var swipInfo = InputManager.Instance.Swipe(sideCamera);
+    //    if (swipInfo != null && swipInfo.Item2 == -1)
+    //    {
+    //        for (int i = 0; i < 4; i++)
+    //        {
+    //            sideBrick.brickShape[i].FlipCube(swipInfo.Item1);
+    //            currentBrick.brickShape[i].FlipCube(swipInfo.Item1);
+    //        }
+    //    }
+    //    else if (swipInfo != null && swipInfo.Item2 > -1)
+    //    {
+    //        for (int i = 0; i < 4; i++)
+    //        {
+    //            if (currentBrick.brickShape[i].Id == swipInfo.Item2)
+    //            {
+    //                sideBrick.brickShape[i].FlipCube(swipInfo.Item1);
+    //                currentBrick.brickShape[i].FlipCube(swipInfo.Item1);
+    //            }
+    //        }
+    //    }
+    //}
+    public void ControlsInputEvetListning()
+    {
+        InputManager.Instance.ControlsInput.AddListener((Enums.ControlsEvents controlsEvent) =>
         {
-            for (int i = 0; i < 4; i++)
+            switch (controlsEvent)
             {
-                sideBrick.brickShape[i].FlipCube(swipInfo.Item1);
-                currentBrick.brickShape[i].FlipCube(swipInfo.Item1);
+                case Enums.ControlsEvents.RIGHT:
+                    currentBrick.Move(Enums.Directions.RIGHT, BOARD_WIDTH, ShapeAt);
+                    break;
+                case Enums.ControlsEvents.DOWN:
+                    currentBrick.Move(Enums.Directions.DOWN, BOARD_WIDTH, ShapeAt);
+                    break;
+                case Enums.ControlsEvents.LEFT:
+                    currentBrick.Move(Enums.Directions.LEFT, BOARD_WIDTH, ShapeAt);
+                    break;
+                case Enums.ControlsEvents.DROP:
+                    currentBrick.DropDown(BOARD_WIDTH, ShapeAt);
+                    break;
+                case Enums.ControlsEvents.RIGHTROTATION:
+                    currentBrick.RotateLeft(BOARD_WIDTH, BOARD_HEIGHT, ShapeAt);
+                    break;
+                case Enums.ControlsEvents.LEFTROTATION:
+                    currentBrick.RotateRight(BOARD_WIDTH, BOARD_HEIGHT, ShapeAt);
+                    break;
             }
-        }
-        else if (swipInfo != null && swipInfo.Item2 > -1)
+            updateDropBrick();
+        });
+    }
+    public void SwipInputEventListning()
+    {
+        InputManager.Instance.SwipInput.AddListener((Enums.Directions direction, int cubeId) =>
         {
-            for (int i = 0; i < 4; i++)
+            if (cubeId == -1)
             {
-                if (currentBrick.brickShape[i].Id == swipInfo.Item2)
+                for (int i = 0; i < 4; i++)
                 {
-                    sideBrick.brickShape[i].FlipCube(swipInfo.Item1);
-                    currentBrick.brickShape[i].FlipCube(swipInfo.Item1);
+                    sideBrick.brickShape[i].FlipCube(direction);
+                    currentBrick.brickShape[i].FlipCube(direction);
                 }
             }
-        }
+            else
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    if (currentBrick.brickShape[i].Id == cubeId)
+                    {
+                        sideBrick.brickShape[i].FlipCube(direction);
+                        currentBrick.brickShape[i].FlipCube(direction);
+                    }
+                }
+            }
+        });
     }
 
-    public void RotateBrick(Enums.Directions direction)
-    {
-        switch (direction)
-        {
-            case Enums.Directions.LEFT:
-                currentBrick.RotateLeft(BOARD_WIDTH, BOARD_HEIGHT, ShapeAt);
-                break;
-            case Enums.Directions.RIGHT:
-                currentBrick.RotateRight(BOARD_WIDTH, BOARD_HEIGHT, ShapeAt);
-                break;
-            default:
-                break;
-        }
-        updateDropBrick();
-    }
+    //public void RotateBrick(Enums.Directions direction)
+    //{
+    //    switch (direction)
+    //    {
+    //        case Enums.Directions.LEFT:
+    //            currentBrick.RotateLeft(BOARD_WIDTH, BOARD_HEIGHT, ShapeAt);
+    //            break;
+    //        case Enums.Directions.RIGHT:
+    //            currentBrick.RotateRight(BOARD_WIDTH, BOARD_HEIGHT, ShapeAt);
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //    updateDropBrick();
+    //}
 
-    public void MoveBrick(Enums.Directions direction)
-    {
-        switch (direction)
-        {
-            case Enums.Directions.LEFT:
-                currentBrick.Move(Enums.Directions.LEFT, BOARD_WIDTH, ShapeAt);
-                break;
-            case Enums.Directions.RIGHT:
-                currentBrick.Move(Enums.Directions.RIGHT, BOARD_WIDTH, ShapeAt);
-                break;
-            case Enums.Directions.BOTTOM:
-                if (!currentBrick.Move(Enums.Directions.BOTTOM, BOARD_WIDTH, ShapeAt))
-                    updateBoard();
-                return;
-            default:
-                break;
-        }
-        updateDropBrick();
-    }
+    //public void MoveBrick(Enums.Directions direction)
+    //{
+    //    switch (direction)
+    //    {
+    //        case Enums.Directions.LEFT:
+    //            currentBrick.Move(Enums.Directions.LEFT, BOARD_WIDTH, ShapeAt);
+    //            break;
+    //        case Enums.Directions.RIGHT:
+    //            currentBrick.Move(Enums.Directions.RIGHT, BOARD_WIDTH, ShapeAt);
+    //            break;
+    //        case Enums.Directions.DOWN:
+    //            if (!currentBrick.Move(Enums.Directions.DOWN, BOARD_WIDTH, ShapeAt))
+    //                updateBoard();
+    //            return;
+    //        default:
+    //            break;
+    //    }
+    //    updateDropBrick();
+    //}
 
-    public void DropBrick()
-    {
-        currentBrick.DropDown(BOARD_WIDTH, ShapeAt);
-        updateBoard();
-    }
+    //public void DropBrick()
+    //{
+
+    //    currentBrick.DropDown(BOARD_WIDTH, ShapeAt);
+    //    updateBoard();
+    //}
 
     public void RotateBrickFaces(Enums.Directions direction)
     {
@@ -375,8 +434,8 @@ public class GameBoard : MonoBehaviour
             case Enums.Directions.TOP:
                 currentBrick.RotateFaces(Enums.Directions.TOP);
                 break;
-            case Enums.Directions.BOTTOM:
-                currentBrick.RotateFaces(Enums.Directions.BOTTOM);
+            case Enums.Directions.DOWN:
+                currentBrick.RotateFaces(Enums.Directions.DOWN);
                 break;
             default:
                 break;

@@ -5,7 +5,9 @@ public delegate bool ShapeAtDelegate(int x, int y);
 
 public class Brick : MonoBehaviour
 {
-    private float[,,] ALLSHAPES = new float[7, 4, 2] {
+    public Enums.BrickType brickType;
+    public GameObject CubePref;
+    private readonly float[,,] ALLSHAPES = new float[7, 4, 2] {
                                         {{0, 0}, {0, 1}, {-1, -1}, {0, -1}},//S
                                         {{-1, 0}, {0, 0}, {0, -1}, {1, -1}},//Z
                                         {{-2, 0}, {-1, 0}, {0, 0}, {1, 0}},//I
@@ -15,14 +17,20 @@ public class Brick : MonoBehaviour
                                         {{-1, 0}, {0, 0}, {1, 0}, {-1, -1}}//L
                                     };
 
-    public Enums.BrickType brickType;
-    public Cube1[] brickShape  = new Cube1[4];
-
+    internal Cube[] brickShape = new Cube[4];
+    private void Awake()
+    {
+        for (var i = 0; i < 4; i++)
+        {
+            brickShape[i] = Instantiate(CubePref).GetComponent<Cube>();
+            brickShape[i].transform.SetParent(transform);
+        }
+    }
     public void SetShape(Enums.BrickType type, bool offset = false)
     {
         brickType = type;
-        int index = (int) brickType;
-        float off = offset? 1.5f : 1;
+        int index = (int)brickType;
+        float off = offset ? 1.5f : 1;
         for (int i = 0; i < ALLSHAPES.GetLength(1); i++)
         {
             brickShape[i].SetPosition(new Vector3(ALLSHAPES[index, i, 0] * off, ALLSHAPES[index, i, 1] * off, 0));
@@ -57,7 +65,7 @@ public class Brick : MonoBehaviour
         var shape = copyShape();
         for (int i = 0; i < 4; i++)
         {
-            var temp = shape[i ,0];
+            var temp = shape[i, 0];
             shape[i, 0] = shape[i, 1];
             shape[i, 1] = -temp;
         }
@@ -111,16 +119,16 @@ public class Brick : MonoBehaviour
                     brickShape[i].FlipCube(Enums.Directions.TOP);
                 }
                 break;
-            case Enums.Directions.BOTTOM:
+            case Enums.Directions.DOWN:
                 for (int i = 0; i < 4; i++)
                 {
-                    brickShape[i].FlipCube(Enums.Directions.BOTTOM);
+                    brickShape[i].FlipCube(Enums.Directions.DOWN);
                 }
                 break;
             default:
                 break;
         }
-        
+
     }
 
     public bool Move(Enums.Directions direction, int boardWidth, ShapeAtDelegate shapeAt)
@@ -142,9 +150,9 @@ public class Brick : MonoBehaviour
                 SoundManager.Instance.PlaySound(Enums.SoundsEffects.MOVE_LR);
             }
         }
-        else if (direction == Enums.Directions.BOTTOM)
+        else if (direction == Enums.Directions.DOWN)
         {
-            if (canMove(Enums.Directions.BOTTOM, boardWidth, shapeAt))
+            if (canMove(Enums.Directions.DOWN, boardWidth, shapeAt))
             {
                 transform.position += Vector3.down;
                 SoundManager.Instance.PlaySound(Enums.SoundsEffects.FALL);
@@ -160,7 +168,7 @@ public class Brick : MonoBehaviour
         float newY = transform.position.y;
         while (newY > float.Epsilon)
         {
-            if (!Move(Enums.Directions.BOTTOM, boardWidth, shapeAt))
+            if (!Move(Enums.Directions.DOWN, boardWidth, shapeAt))
             {
                 break;
             }
@@ -194,7 +202,7 @@ public class Brick : MonoBehaviour
                 }
             }
 
-        else if (direction == Enums.Directions.BOTTOM)
+        else if (direction == Enums.Directions.DOWN)
         {
             for (int i = 0; i < 4; i++)
             {
@@ -208,7 +216,7 @@ public class Brick : MonoBehaviour
             }
         }
         else return false;
-                    
+
         return canMove;
     }
 
@@ -218,12 +226,12 @@ public class Brick : MonoBehaviour
         {
             float x = transform.localPosition.x + shape[i, 0];
             float y = transform.localPosition.y - shape[i, 1];
-            if ( x < 0 || x >= boardWidth 
+            if (x < 0 || x >= boardWidth
                 || y < 0 || y >= boardHeight
                 || shapeAt(Mathf.RoundToInt(x), Mathf.RoundToInt(y)))
                 return false;
         }
-            
+
         return true;
     }
 
@@ -242,13 +250,13 @@ public class Brick : MonoBehaviour
     {
         for (int i = 0; i < 4; i++)
         {
-            RotateFaces((Enums.Directions)UnityEngine.Random.Range(0,5));
+            RotateFaces((Enums.Directions)UnityEngine.Random.Range(0, 5));
         }
         if (facesFlipRate > 0)
         {
             for (int i = 0; i < 4; i++)
             {
-                if(UnityEngine.Random.Range(0,3) < facesFlipRate)
+                if (UnityEngine.Random.Range(0, 3) < facesFlipRate)
                 {
                     brickShape[i].FlipCube((Enums.Directions)UnityEngine.Random.Range(0, 5));
                 }

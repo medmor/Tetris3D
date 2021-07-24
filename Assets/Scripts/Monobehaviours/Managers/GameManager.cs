@@ -6,7 +6,7 @@ public class GameManager : Manager<GameManager>
 {
     private string currentLevelName = "";
     public Enums.GameState CurrentGameState { get; private set; } = Enums.GameState.PREGAME;
-    public Events.EventGameState OnGameStateChanged;
+    //public Events.EventGameState OnGameStateChanged;
     public Enums.GameMode GameMode { get; set; }
 
     public GameObject[] SystemPrefabs;
@@ -45,11 +45,10 @@ public class GameManager : Manager<GameManager>
     {
         if (currentLevelName == "Main")
         {
-            //UIManager.Instance.HideMainMenu();
-            UIManager.Instance.GetBoardManager();
+            //UIManager.Instance.GetBoardManager();
             UpdateState(Enums.GameState.RUNNING);
         }
-        else if(currentLevelName == "Boot")
+        else if (currentLevelName == "Boot")
         {
             UIManager.Instance.ShowMainMenu();
         }
@@ -80,7 +79,7 @@ public class GameManager : Manager<GameManager>
 
     public void TogglePause()
     {
-        UpdateState(CurrentGameState == Enums.GameState.RUNNING 
+        UpdateState(CurrentGameState == Enums.GameState.RUNNING
             ? Enums.GameState.PAUSED : Enums.GameState.RUNNING);
     }
 
