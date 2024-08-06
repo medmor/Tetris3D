@@ -134,7 +134,6 @@ public class UIManager : Manager<UIManager>
         closeSettings
             .onClick.AddListener(() =>
             {
-                GameManager.Instance.TogglePause();
                 settingsMenu.SetActive(false);
             });
 
